@@ -307,7 +307,7 @@ public class PullToward : MonoBehaviour {
                             limitVector = JelloVectorTools.rotateVector(ptNorm, coneAngle * 0.5f);
 
                         //move our position to the closest point on the limit vector. Handle max pull back at the same time.
-                        pullPosition = JelloVectorTools.getClosestPointOnSegment(pullPosition, ptGlobal, ptGlobal + limitVector.normalized * maxPullBack);
+                        //pullPosition = JelloVectorTools.getClosestPointOnSegment(pullPosition, ptGlobal, ptGlobal + limitVector.normalized * maxPullBack);
                     }
                 }
 
@@ -316,14 +316,14 @@ public class PullToward : MonoBehaviour {
                 if (pullBackDistance != 0f) {
                     //if we exceed the max pullback, set to the max pullback.
                     if (pullBackDistance > maxPullBack * maxPullBack) {
-                        pullPosition = ptGlobal + (pullPosition - ptGlobal).normalized * maxPullBack; // still do this when angle is not right.
+                        //pullPosition = ptGlobal + (pullPosition - ptGlobal).normalized * maxPullBack; // still do this when angle is not right.
                         pullBackDistance = maxPullBack * maxPullBack;
                     }
                 }
 
                 //explicitly set the selected pointmass position and velocity.
-                pointmass.Position = pullPosition;
-                pointmass.velocity = Vector2.zero;
+                //pointmass.Position = pullPosition;
+                //pointmass.velocity = Vector2.zero;
             } else//our mouse is down, but is inside the perimeter of the body. 
             {
                 ReleasePointMass();//release the selected point mass and restore its ajacent point masses
@@ -333,11 +333,15 @@ public class PullToward : MonoBehaviour {
             //sync up with fixed update
             yield return new WaitForFixedUpdate();
 
-            Vector2 direction = ((Vector2)body.transform.TransformPoint(body.Shape.EdgeVertices[pmIndex]) - pointmass.Position).normalized;
-            body.AddForce(direction * pullBackDistance * force );
-            body.AddForce(direction * pullBackDistance * force , body.Shape.EdgeVertices[pmIndex], true);
+            //Vector2 direction = (pointmass.Position - (Vector2)body.transform.TransformPoint(body.Shape.EdgeVertices[pmIndex])).normalized;
+            //pullBackDistance = 1;
+            //body.AddForce(direction * pullBackDistance * force );
+            //body.AddForce(direction * pullBackDistance * force , body.Shape.EdgeVertices[pmIndex], true);
 
-
+            Vector2 pointMassDistance = pullPosition - pointmass.Position;
+            float pointMassDistanceToMake = force * Mathf.Lerp(3f,1f, pointMassDistance.magnitude / 7.5f ) * 0.001f; //TODO Add a Max and min of pointMassDistance.magitude / 1-
+            if (pointMassDistance.magnitude <= pointMassDistanceToMake) pointmass.Position = pullPosition;
+            pointmass.Position = pointmass.Position + (pointMassDistance.normalized * pointMassDistanceToMake);
         }
 
         //mouse button has been released!
